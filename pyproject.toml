@@ -1,0 +1,40 @@
+[project]
+name = "cleandift"
+version = "0.1.0"
+description = "CleanDIFT: diffusion features without noise (CompVis CVPR 2025)"
+readme = "README.md"
+authors = [
+    { name = "CompVis @ LMU Munich" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate",
+    "diffusers>=0.27",
+    "einops",
+    "hydra-core",
+    "jaxtyping",
+    "numpy",
+    "omegaconf",
+    "torch>=2.7.0",
+    "torchvision>=0.22.0",
+    "transformers",
+    "tqdm",
+    "vision-core",
+]
+
+[project.scripts]
+cleandift-train = "cleandift.train:main"
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+vision-core = { git = "https://github.com/jeffrey-ke/vision_core.git", rev = "4b266353c00a9f5589fb6b59183e25fe84ef45a1" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

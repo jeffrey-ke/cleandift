@@ -1,31 +1,36 @@
 seed: 42
-max_val_steps: 10
+max_val_steps: 100
 val_freq: 100
-checkpoint_freq: 100
+checkpoint_freq: 200
 checkpoint_dir: ./checkpoints
 lr: 1e-5
-max_steps: null
+max_steps: 400
 
 grad_accum_steps: 1
 
 data:
-  _target_: cleandift.dataloader.DataModule
+  _target_: cleandift.isaac_dataloader.IsaacObsMaskDataModule
   dataset_dir: ./data
+  dataset_dirs: null   # or list of umbrella dirs to ConcatDataset, e.g. [a/expanded-refseg, a/mixed-persp]
   batch_size: 8
-  img_size: 512
+  img_size: 768
+  alpha_crop: true
+  caption_mode: empty
+  render_dirs: null
+  val_render_dirs: null
 
 model:
   _target_: cleandift.sd_feature_extraction.StableFeatureAligner
-  sd_version: sd15
-  t_max: 999 # Max timestep used during training
+  sd_version: sd21
+  t_max: 999
   num_t_stratification_bins: 3
   train_unet: True
   learn_timestep: True
-  use_text_condition: true
+  use_text_condition: false
 
   ae:
     _target_: cleandift.ae.AutoencoderKL
-    repo: stable-diffusion-v1-5/stable-diffusion-v1-5
+    repo: sd2-community/stable-diffusion-2-1
   mapping:
     _target_: cleandift.utils.MappingSpec
     depth: 2
@@ -37,7 +42,7 @@ model:
     depth: 3
     ffn_expansion: 1
     dim_cond: ${..mapping.width}
-  feature_extractor_cls: cleandift.sd_feature_extraction.SD15UNetFeatureExtractor
+  feature_extractor_cls: cleandift.sd_feature_extraction.SD21UNetFeatureExtractor
   feature_dims:
     mid: 1280
     us1: 1280
@@ -54,7 +59,7 @@ model:
 
 lr_scheduler:
   name: constant_with_warmup
-  num_warmup_steps: 2000
+  num_warmup_steps: 50
   num_training_steps: null
   scheduler_specific_kwargs: {}
 

@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - sd21_isaac_obsmask
+  - _self_
+
+data:
+  dataset_dir: null
+  dataset_dirs:
+    - /data/user/jeffk/datasets/expanded-refseg
+    - /data/user/jeffk/datasets/mixed-persp
+    - /data/user/jeffk/datasets/shelf-optflow

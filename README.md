@@ -24,11 +24,42 @@ We propose CleanDIFT, a novel method to extract noise-free, timestep-independent
 
 ### Setup
 
-Just clone the repo and install the requirements via `pip install -r requirements.txt`, then you're ready to go.
+Clone the repo, then create the uv environment (pulls pinned `vision-core` from GitHub automatically):
+
+```bash
+cd cleandift
+uv sync
+```
 
 ### Training
 
-In order to train a feature extractor on your own, you can run `python train.py`. The training script expects your data to be stored in `./data` with the following format: Single level directory with images named `filename.jpg` and corresponding json files `filename.json` that contain the key `caption`.
+Run training with the project venv:
+
+```bash
+uv run cleandift-train
+# or: uv run python train.py
+```
+
+**COYO-style data** (`./data` with `filename.jpg` + `filename.json` containing `caption`):
+
+```bash
+uv run cleandift-train --config-name sd21_feature_extractor
+```
+
+**Isaac ObsMask renders** (read via `ObsMask.deserialize` — no jpg+json export):
+
+```bash
+# one umbrella (parent of render*/)
+uv run cleandift-train --config-name sd21_isaac_obsmask \
+  data.dataset_dir=/path/to/expanded-refseg
+
+# several umbrellas concatenated (3750 frames across expanded-refseg + mixed-persp + shelf-optflow)
+uv run cleandift-train --config-name sd21_isaac_obsmask_multi
+# or override:
+uv run cleandift-train --config-name sd21_isaac_obsmask \
+  data.dataset_dir=null \
+  'data.dataset_dirs=[/data/user/jeffk/datasets/expanded-refseg,/data/user/jeffk/datasets/mixed-persp]'
+```
 
 ### Feature Extraction
 

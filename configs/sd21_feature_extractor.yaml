@@ -9,13 +9,13 @@ max_steps: null
 grad_accum_steps: 1
 
 data:
-  _target_: src.dataloader.DataModule
+  _target_: cleandift.dataloader.DataModule
   dataset_dir: ./data
   batch_size: 8
   img_size: 768
 
 model:
-  _target_: src.sd_feature_extraction.StableFeatureAligner
+  _target_: cleandift.sd_feature_extraction.StableFeatureAligner
   sd_version: sd21
   t_max: 999 # Max timestep used during training
   num_t_stratification_bins: 3
@@ -24,20 +24,20 @@ model:
   use_text_condition: true
 
   ae:
-    _target_: src.ae.AutoencoderKL
+    _target_: cleandift.ae.AutoencoderKL
     repo: stabilityai/stable-diffusion-2-1
   mapping:
-    _target_: src.utils.MappingSpec
+    _target_: cleandift.utils.MappingSpec
     depth: 2
     width: 256
     d_ff: 768
     dropout: 0.0
-  adapter_layer_class: src.sd_feature_extraction.FFNStack
+  adapter_layer_class: cleandift.sd_feature_extraction.FFNStack
   adapter_layer_params:
     depth: 3
     ffn_expansion: 1
     dim_cond: ${..mapping.width}
-  feature_extractor_cls: src.sd_feature_extraction.SD21UNetFeatureExtractor
+  feature_extractor_cls: cleandift.sd_feature_extraction.SD21UNetFeatureExtractor
   feature_dims:
     mid: 1280
     us1: 1280

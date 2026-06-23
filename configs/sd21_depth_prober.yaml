@@ -1,9 +1,9 @@
 # @package _global_
 
 model:
-  _target_: src.depth.DepthPred
+  _target_: cleandift.depth.DepthPred
   loss:
-    _target_: src.depth.SigLoss
+    _target_: cleandift.depth.SigLoss
   model_config_path: ./configs/sd21_feature_extractor.yaml
   diffusion_image_size: 768
   channels: 1280
