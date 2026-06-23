@@ -1,0 +1,45 @@
+[start] job 41644665 on v010.ib.bridges2.psc.edu at Tue Jun 23 13:02:39 EDT 2026
+flags : [ehuB]   (no 'i' = non-interactive)
+uv    : /jet/home/jke2/.local/bin/uv
+uv 0.11.21 (x86_64-unknown-linux-gnu)
+cache : /ocean/projects/cis260205p/jke2/.uv_cache
+HF_HUB_CACHE=/ocean/projects/cis260205p/jke2/.hf_cache/hub
+HF_TOKEN set: yes
+CUDA_VISIBLE_DEVICES=0
+Tesla V100-SXM2-32GB, 32768 MiB, 560.35.03
+torch 2.11.0+cu128 cuda Tesla V100-SXM2-32GB
+[2026-06-23 13:05:09,744][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/main/vae/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:09,803][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/vae%2Fconfig.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:09,864][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/vae/diffusion_pytorch_model.safetensors.index.json "HTTP/1.1 404 Not Found"
+[2026-06-23 13:05:26,451][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/sd2-community/stable-diffusion-2-1 "HTTP/1.1 200 OK"
+[2026-06-23 13:05:26,502][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:26,532][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/model_index.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:26,612][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/model_index.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,044][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/sd2-community/stable-diffusion-2-1/revision/main "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,110][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/feature_extractor/preprocessor_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,117][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,145][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,159][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer/vocab.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,161][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer/merges.txt "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,175][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,178][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/text_encoder/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,186][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,188][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/scheduler/scheduler_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,199][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/feature_extractor%2Fpreprocessor_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,219][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fmerges.txt "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,226][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/scheduler%2Fscheduler_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,251][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fspecial_tokens_map.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,256][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fvocab.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,259][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Ftokenizer_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,259][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fmerges.txt "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,290][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/feature_extractor%2Fpreprocessor_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,302][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/scheduler%2Fscheduler_config.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,318][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/unet/diffusion_pytorch_model.safetensors "HTTP/1.1 302 Found"
+[2026-06-23 13:05:27,338][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/text_encoder/model.safetensors "HTTP/1.1 302 Found"
+[2026-06-23 13:05:27,583][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/unet/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:05:27,583][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/text_encoder%2Fconfig.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,583][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/tokenizer%2Fvocab.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,661][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/unet%2Fconfig.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,722][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/text_encoder%2Fconfig.json "HTTP/1.1 200 OK"
+[2026-06-23 13:05:27,760][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/unet%2Fconfig.json "HTTP/1.1 200 OK"
+[end] rc=1 at 13:05:56

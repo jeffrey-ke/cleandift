@@ -1,0 +1,17 @@
+[start] job 41644677 on v010.ib.bridges2.psc.edu at Tue Jun 23 13:06:39 EDT 2026
+flags : [ehuB]   (no 'i' = non-interactive)
+uv    : /jet/home/jke2/.local/bin/uv
+uv 0.11.21 (x86_64-unknown-linux-gnu)
+cache : /ocean/projects/cis260205p/jke2/.uv_cache
+HF_HUB_CACHE=/ocean/projects/cis260205p/jke2/.hf_cache/hub
+HF_TOKEN set: yes
+CUDA_VISIBLE_DEVICES=0
+Tesla V100-SXM2-32GB, 32768 MiB, 560.35.03
+torch 2.11.0+cu128 cuda Tesla V100-SXM2-32GB
+[2026-06-23 13:06:49,940][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/main/vae/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:06:49,961][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/vae%2Fconfig.json "HTTP/1.1 200 OK"
+[2026-06-23 13:06:49,997][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/bb2154823665391b4fb29b0b9cf82a198964ee05/vae/diffusion_pytorch_model.safetensors.index.json "HTTP/1.1 404 Not Found"
+[2026-06-23 13:06:57,218][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/sd2-community/stable-diffusion-2-1 "HTTP/1.1 200 OK"
+[2026-06-23 13:06:57,267][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/sd2-community/stable-diffusion-2-1/resolve/main/model_index.json "HTTP/1.1 307 Temporary Redirect"
+[2026-06-23 13:06:57,284][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sd2-community/stable-diffusion-2-1/bb2154823665391b4fb29b0b9cf82a198964ee05/model_index.json "HTTP/1.1 200 OK"
+[end] rc=1 at 13:07:01
