@@ -251,9 +251,11 @@ class StableFeatureAligner(nn.Module):
         val_t: int = 261,
         val_feature_key: str = "us6",
         val_chunk_size: int = 10,
-        use_adapters: bool = True
+        use_adapters: bool = True,
+        dtype: str = "bfloat16",
     ):
         super().__init__()
+        self.dtype = getattr(torch, dtype) if isinstance(dtype, str) else dtype
         self.ae = ae
         self.sd_version = sd_version
         self.val_t = val_t
@@ -285,10 +287,11 @@ class StableFeatureAligner(nn.Module):
         self.unet_feature_extractor_base = locate(feature_extractor_cls)().cuda()
         self.pipe = DiffusionPipeline.from_pretrained(
             self.repo,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=self.dtype,
             use_safetensors=True,
         ).to("cuda")
         self.unet_feature_extractor_base.load_state_dict(self.pipe.unet.state_dict())
+        self.unet_feature_extractor_base.to(dtype=self.dtype)
         self.unet_feature_extractor_base.eval()
         self.unet_feature_extractor_base.requires_grad_(False)
         self.unet_feature_extractor_base.compile()
@@ -297,6 +300,7 @@ class StableFeatureAligner(nn.Module):
         self.unet_feature_extractor_cleandift.load_state_dict(
             {k: v.detach().clone() for k, v in self.unet_feature_extractor_base.state_dict().items()}
         )
+        self.unet_feature_extractor_cleandift.to(dtype=self.dtype)
 
         if train_unet or learn_timestep:
             self.unet_feature_extractor_cleandift.train()
@@ -311,7 +315,7 @@ class StableFeatureAligner(nn.Module):
         else:
             with torch.no_grad():
                 prompt_embeds_dict = self.get_prompt_embeds([""])
-                self._empty_prompt_embeds = prompt_embeds_dict["prompt_embeds"]
+                self._empty_prompt_embeds = prompt_embeds_dict["prompt_embeds"].to(dtype=self.dtype)
                 del self.pipe.text_encoder
 
         del self.pipe.unet, self.pipe.vae
@@ -353,6 +357,7 @@ class StableFeatureAligner(nn.Module):
     def forward(
         self, x: Float[torch.Tensor, "b c h w"], caption: list[str], **kwargs
     ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+        x = x.to(dtype=self.dtype)
         B, *_ = x.shape
         device = x.device
         t_range = self.t_max - self.t_min
@@ -365,7 +370,7 @@ class StableFeatureAligner(nn.Module):
         B, N_T = t.shape
 
         with torch.no_grad():
-            unet_conds = self._get_unet_conds(caption, device, x.dtype, N_T)
+            unet_conds = self._get_unet_conds(caption, device, self.dtype, N_T)
             x_0: Float[torch.Tensor, "(B N_T) ..."] = self.ae.encode(x)
             x_0 = einops.repeat(x_0, "B ... -> (B N_T) ...", N_T=N_T)
             _, *latent_shape = x_0.shape
@@ -401,14 +406,14 @@ class StableFeatureAligner(nn.Module):
                 map_cond: Float[torch.Tensor, "(B N_T) ..."] = self.mapping(
                     self.time_in_proj(
                         self.time_emb(
-                            einops.rearrange(t, "B N_T -> (B N_T) 1").to(dtype=x.dtype, device=device) / self.t_max_model
+                            einops.rearrange(t, "B N_T -> (B N_T) 1").float().to(device=device) / self.t_max_model
                         )
                     )
                 )
    
             feats_cleandift: dict[str, Float[torch.Tensor, "B N_T ..."]] = {
                 k: einops.rearrange(
-                    self.adapters[k](einops.rearrange(v, "B N_T ... -> (B N_T) ..."), cond=map_cond),
+                    self.adapters[k](einops.rearrange(v.float(), "B N_T ... -> (B N_T) ..."), cond=map_cond),
                     "(B N_T) ... -> B N_T ...",
                     B=B,
                     N_T=N_T,
@@ -417,12 +422,20 @@ class StableFeatureAligner(nn.Module):
             }
 
         if self.alignment_loss == "mse":
-            return {f"mse_{k}": F.mse_loss(feats_cleandift[k], v.detach()) for k, v in feats_base.items()}
+            return {
+                f"mse_{k}": F.mse_loss(feats_cleandift[k].float(), v.detach().float())
+                for k, v in feats_base.items()
+            }
         elif self.alignment_loss == "l1":
-            return {f"l1_{k}": F.l1_loss(feats_cleandift[k], v.detach()) for k, v in feats_base.items()}
+            return {
+                f"l1_{k}": F.l1_loss(feats_cleandift[k].float(), v.detach().float())
+                for k, v in feats_base.items()
+            }
         elif self.alignment_loss == "cossim":
             return {
-                f"neg_cossim_{k}": -F.cosine_similarity(feats_cleandift[k], v.detach(), dim=-1).mean()
+                f"neg_cossim_{k}": -F.cosine_similarity(
+                    feats_cleandift[k].float(), v.detach().float(), dim=-1
+                ).mean()
                 for k, v in feats_base.items()
             }
         else:
@@ -439,6 +452,7 @@ class StableFeatureAligner(nn.Module):
         input_pure_noise: bool = False,
         eps: torch.Tensor = None,
     ) -> Float[torch.Tensor, "b d h' w'"]:
+        x = x.to(dtype=self.dtype)
         if use_base_model:
             assert not t is None
             B, *_ = x.shape
@@ -446,7 +460,7 @@ class StableFeatureAligner(nn.Module):
             if caption is None:
                 caption = [""] * B
 
-            unet_conds = self._get_unet_conds(caption, x.device, x.dtype, 1)
+            unet_conds = self._get_unet_conds(caption, x.device, self.dtype, 1)
             x_0 = self.ae.encode(x)
             eps = torch.randn_like(x_0) if eps is None else eps
             if input_pure_noise:
@@ -468,7 +482,7 @@ class StableFeatureAligner(nn.Module):
             if caption is None:
                 caption = [""] * B
 
-            unet_conds = self._get_unet_conds(caption, device, x.dtype, 1)
+            unet_conds = self._get_unet_conds(caption, device, self.dtype, 1)
             x_0 = self.ae.encode(x)
 
             feats = self.unet_feature_extractor_cleandift(
@@ -486,9 +500,9 @@ class StableFeatureAligner(nn.Module):
             else:
                 assert self.use_adapters, "Adapters must be enabled to use t conditioning on cleandift model"
                 map_cond: Float[torch.Tensor, "B ..."] = self.mapping(
-                    self.time_in_proj(self.time_emb(t[:, None].to(dtype=x.dtype, device=device) / self.t_max_model))
+                    self.time_in_proj(self.time_emb(t[:, None].float().to(device=device) / self.t_max_model))
                 )
                 if feat_key is not None:
-                    return einops.rearrange(self.adapters[feat_key](feats, cond=map_cond), "B H W D -> B D H W")
+                    return einops.rearrange(self.adapters[feat_key](feats.float(), cond=map_cond), "B H W D -> B D H W")
                 else:
-                    return {key: einops.rearrange(self.adapters[key](feats[key], cond=map_cond), "B H W D -> B D H W") for key in feats.keys()}
+                    return {key: einops.rearrange(self.adapters[key](feats[key].float(), cond=map_cond), "B H W D -> B D H W") for key in feats.keys()}

@@ -21,6 +21,7 @@ data:
 
 model:
   _target_: cleandift.sd_feature_extraction.StableFeatureAligner
+  dtype: bfloat16
   sd_version: sd21
   t_max: 999
   num_t_stratification_bins: 3
@@ -31,6 +32,7 @@ model:
   ae:
     _target_: cleandift.ae.AutoencoderKL
     repo: sd2-community/stable-diffusion-2-1
+    dtype: ${..dtype}
   mapping:
     _target_: cleandift.utils.MappingSpec
     depth: 2

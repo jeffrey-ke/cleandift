@@ -3,11 +3,21 @@ import torch
 from torch import nn
 
 class AutoencoderKL(nn.Module):
-    def __init__(self, scale: float = 0.18215, shift: float = 0.0, repo="stabilityai/stable-diffusion-2-1"):
+    def __init__(
+        self,
+        scale: float = 0.18215,
+        shift: float = 0.0,
+        repo: str = "sd2-community/stable-diffusion-2-1",
+        dtype: str = "bfloat16",
+    ):
         super().__init__()
         self.scale = scale
         self.shift = shift
-        self.ae = diffusers.AutoencoderKL.from_pretrained(repo, subfolder="vae")
+        torch_dtype = getattr(torch, dtype) if isinstance(dtype, str) else dtype
+        self.ae = diffusers.AutoencoderKL.from_pretrained(
+            repo, subfolder="vae", torch_dtype=torch_dtype
+        )
+        self.ae.to(dtype=torch_dtype)
         self.ae.eval()
         self.ae.compile()
         self.ae.requires_grad_(False)
