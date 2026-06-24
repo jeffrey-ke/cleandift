@@ -1,11 +1,11 @@
 #!/bin/bash
 # CleanDIFT fine-tune on isaac ObsMask umbrellas (3750 frames).
-# One L40S-48 GPU (torch 2.11+cu128 has no kernels for V100 CC 7.0).
+# One L40S-48 GPU (bf16 backbone; batch_size=8 fits after dtype fix).
 #SBATCH --job-name=cleandift-obsmask
 #SBATCH -p GPU-shared
 #SBATCH -N 1
 #SBATCH --gpus=l40s-48:1
-#SBATCH -t 0:45:00
+#SBATCH -t 2:00:00
 #SBATCH -o cleandift_obsmask_%j.out
 #SBATCH -e cleandift_obsmask_%j.err
 
@@ -14,6 +14,8 @@ trap 'echo "[end] rc=$? at $(date +%T)"' EXIT
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export PYTHONUNBUFFERED=1
+export TORCHDYNAMO_DISABLE=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export HF_HUB_CACHE=/ocean/projects/cis260205p/jke2/.hf_cache/hub
 export HF_TOKEN="$(cat "$HOME/.cache/huggingface/token")"
 
@@ -43,4 +45,6 @@ uv run python -c "import torch; assert torch.cuda.is_available(), 'torch cannot 
 uv run cleandift-train --config-name sd21_isaac_obsmask_multi \
   "data.dataset_dirs=${DATASET_DIRS}" \
   "checkpoint_dir=${CKPT_DIR}" \
-  data.batch_size=8
+  data.batch_size=2 \
+  grad_accum_steps=2 \
+  val_freq=400
