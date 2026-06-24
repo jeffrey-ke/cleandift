@@ -318,7 +318,11 @@ class StableFeatureAligner(nn.Module):
                 self._empty_prompt_embeds = prompt_embeds_dict["prompt_embeds"].to(dtype=self.dtype)
                 del self.pipe.text_encoder
 
+        self.scheduler = self.pipe.scheduler
         del self.pipe.unet, self.pipe.vae
+        if not self.use_text_condition:
+            del self.pipe
+        torch.cuda.empty_cache()
 
         self.t_min = t_min
         self.t_max = t_max
@@ -376,7 +380,7 @@ class StableFeatureAligner(nn.Module):
             _, *latent_shape = x_0.shape
             noise_sample = torch.randn((B * N_T, *latent_shape), device=device, dtype=x.dtype)
             
-            x_t: Float[torch.Tensor, "(B N_T) ..."] = self.pipe.scheduler.add_noise(
+            x_t: Float[torch.Tensor, "(B N_T) ..."] = self.scheduler.add_noise(
                 x_0,
                 noise_sample,
                 einops.rearrange(t, "B N_T -> (B N_T)"),
@@ -469,7 +473,7 @@ class StableFeatureAligner(nn.Module):
                 ), "Sanity check. Pure noise means that no x_t is given to the U-Net, just pure noise (eps)."
                 x_t = eps
             else:
-                x_t = self.pipe.scheduler.add_noise(x_0, eps, t)
+                x_t = self.scheduler.add_noise(x_0, eps, t)
             
             if feat_key is None:
                 feats = self.unet_feature_extractor_base(x_t, t, **unet_conds)
