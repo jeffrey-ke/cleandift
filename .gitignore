@@ -8,3 +8,5 @@ outputs/
 checkpoints/
 *.pth
 .hydra/
+scripts/*.out
+scripts/*.err
