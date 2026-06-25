@@ -3,7 +3,7 @@
 #SBATCH --job-name=cleandift-eval
 #SBATCH -p GPU-shared
 #SBATCH -N 1
-#SBATCH --gpus=l40s-48:1
+#SBATCH --gpus=h100-80:1
 #SBATCH -t 0:45:00
 #SBATCH -o cleandift_eval_%j.out
 #SBATCH -e cleandift_eval_%j.err

@@ -62,7 +62,12 @@ class ValMetrics:
     per_layer: dict[str, float]
 
 
-def load_model(checkpoint: Path, device: torch.device):
+def load_model(
+    checkpoint: Path | None,
+    device: torch.device,
+    *,
+    pretrained: bool = False,
+):
     cfg = OmegaConf.load(_CONFIG_DIR / "sd21_isaac_obsmask.yaml")
     cfg.data.dataset_dirs = DATASET_DIRS
     cfg.data.dataset_dir = None
@@ -70,7 +75,17 @@ def load_model(checkpoint: Path, device: torch.device):
     OmegaConf.resolve(cfg)
     cfg = hydra.utils.instantiate(cfg)
     model = cfg.model.to(device)
-    state_dict = torch.load(checkpoint, map_location=device, weights_only=True)
+    if pretrained:
+        from huggingface_hub import hf_hub_download
+        from safetensors.torch import load_file
+
+        ckpt_path = hf_hub_download(
+            repo_id="CompVis/cleandift", filename="cleandift_sd21_full.safetensors"
+        )
+        state_dict = load_file(ckpt_path)
+    else:
+        assert checkpoint is not None
+        state_dict = torch.load(checkpoint, map_location=device, weights_only=True)
     model.load_state_dict(state_dict, strict=True)
     model.eval()
     return model, cfg.data
@@ -88,22 +103,44 @@ def run_full_validation(model, dataloader, device) -> ValMetrics:
     total_loss = 0.0
     per_layer_sum: dict[str, float] = {}
     n_samples = 0
+    n_batches = 0
+    n_skipped = 0
 
-    for batch in tqdm(dataloader, desc="Full validation"):
-        batch_total, batch_layers = batch_loss(model, batch, device)
+    iterator = iter(dataloader)
+    pbar = tqdm(desc="Full validation")
+    while True:
+        try:
+            batch = next(iterator)
+            batch_total, batch_layers = batch_loss(model, batch, device)
+        except StopIteration:
+            break
+        except (FileNotFoundError, OSError) as exc:
+            n_skipped += 1
+            logger.warning("Skipping batch: %s", exc)
+            pbar.update(1)
+            continue
         bs = batch["x"].shape[0]
         total_loss += batch_total * bs
         n_samples += bs
+        n_batches += 1
         for k, v in batch_layers.items():
             per_layer_sum[k] = per_layer_sum.get(k, 0.0) + v * bs
+        pbar.update(1)
+    pbar.close()
+
+    if n_samples == 0:
+        raise RuntimeError(f"All batches skipped ({n_skipped} failures)")
 
     per_layer = {k: v / n_samples for k, v in per_layer_sum.items()}
-    return ValMetrics(
+    metrics = ValMetrics(
         n_samples=n_samples,
-        n_batches=len(dataloader),
+        n_batches=n_batches,
         total_loss=total_loss / n_samples,
         per_layer=per_layer,
     )
+    metrics_dict = asdict(metrics)
+    metrics_dict["n_skipped_batches"] = n_skipped
+    return metrics, metrics_dict
 
 
 def load_isaac_frame(dataset_root: str, render_dir: str, frame_idx: int, img_size: int = 768):
@@ -283,6 +320,11 @@ def main():
         ),
     )
     parser.add_argument("--feat-key", default="us6")
+    parser.add_argument(
+        "--pretrained",
+        action="store_true",
+        help="Load CompVis/cleandift cleandift_sd21_full.safetensors instead of --checkpoint",
+    )
     parser.add_argument("--skip-val", action="store_true")
     parser.add_argument("--skip-correspondence", action="store_true")
     args = parser.parse_args()
@@ -291,19 +333,28 @@ def main():
     device = torch.device("cuda:0")
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Loading checkpoint %s", args.checkpoint)
-    model, data_module = load_model(args.checkpoint, device)
-
-    results = {"checkpoint": str(args.checkpoint), "feat_key": args.feat_key}
+    if args.pretrained:
+        logger.info("Loading pretrained CompVis/cleandift cleandift_sd21_full.safetensors")
+        model, data_module = load_model(None, device, pretrained=True)
+        results = {"checkpoint": "CompVis/cleandift/cleandift_sd21_full.safetensors", "feat_key": args.feat_key}
+    else:
+        logger.info("Loading checkpoint %s", args.checkpoint)
+        model, data_module = load_model(args.checkpoint, device)
+        results = {"checkpoint": str(args.checkpoint), "feat_key": args.feat_key}
 
     if not args.skip_val:
         val_loader = data_module.val_dataloader()
         logger.info("Running full validation on %d samples", len(val_loader.dataset))
-        metrics = run_full_validation(model, val_loader, device)
-        results["full_validation"] = asdict(metrics)
-        logger.info("Full validation loss: %.4f (n=%d)", metrics.total_loss, metrics.n_samples)
+        metrics, metrics_dict = run_full_validation(model, val_loader, device)
+        results["full_validation"] = metrics_dict
+        logger.info(
+            "Full validation loss: %.4f (n=%d, skipped_batches=%d)",
+            metrics.total_loss,
+            metrics.n_samples,
+            metrics_dict["n_skipped_batches"],
+        )
         with open(args.output_dir / "full_validation.json", "w") as f:
-            json.dump(results["full_validation"], f, indent=2)
+            json.dump(metrics_dict, f, indent=2)
 
     if not args.skip_correspondence:
         run_correspondence_viz(model, args.output_dir, device, feat_key=args.feat_key)
